@@ -86,12 +86,12 @@ class Environment(BaseModel):
         existing_roles = dict()
         for item in ROLES_LIST:
             existing_roles[item['name']] = item
-                
+
         init_actions, watch_actions = [], []
         for role in args:
             class_name = role['name'].replace(' ', '_') + '_Requirement'
             requirement_type = type(class_name, (Requirement,), {})
-            if role['name'] in existing_roles.keys():
+            if role['name'] in existing_roles:
                 print('Add a predefiend role:', role['name'])
                 role_object = ROLES_MAPPING[role['name']]
                 if 'Engineer' in role['name']:
@@ -112,12 +112,12 @@ class Environment(BaseModel):
                     llm_api_key=self.llm_api_key,
                     serpapi_api_key=self.serpapi_key,
                 )
-                
+
             self.add_role(_role)
             watch_actions.append(requirement_type)
             init_actions.append(_role.init_actions)
-            
-        
+
+
         init_actions.append(Requirement)
         self.add_role(ActionObserver(steps=plan, watch_actions=init_actions, init_actions=watch_actions, proxy=self.proxy, llm_api_key=self.llm_api_key))
 
@@ -136,8 +136,8 @@ class Environment(BaseModel):
             filename = message.instruct_content.Key
             file_type = re.findall('```(.*?)\n', str(message.content))[0]
             file_content = re.findall(f'```{file_type}([\s\S]*?)```', str(message.content))[0]
-        
-        if message.role and 'ActionObserver' != message.role:
+
+        if message.role and message.role != 'ActionObserver':
             if hasattr(message.instruct_content, 'Response'):
                 content = message.instruct_content.Response
             else:
@@ -155,7 +155,7 @@ class Environment(BaseModel):
 
             if self.alg_msg_queue:
                 self.alg_msg_queue.put_nowait(format_message(action=MessageType.RunTask.value, data={'task_id': self.task_id, 'task_message':msg}))
-        
+
         if 'Agents Observer' in message.role:
             self.new_roles_args = self._parser_roles(message.content)
             # send role list
