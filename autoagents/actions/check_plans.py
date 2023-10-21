@@ -81,6 +81,5 @@ class CheckPlans(Action):
         plan = re.findall('## Execution Plan:([\s\S]*?)##', str(context))[-1]
         context = re.findall('## Question or Task:([\s\S]*?)##', str(context))[-1]
         prompt = PROMPT_TEMPLATE.format(context=context, plan=plan, roles=roles, format_example=FORMAT_EXAMPLE)
-        rsp = await self._aask_v1(prompt, "task", OUTPUT_MAPPING)
-        return rsp
+        return await self._aask_v1(prompt, "task", OUTPUT_MAPPING)
 

@@ -100,10 +100,10 @@ class CustomAction(Action):
             f.write(content)
         
     async def run(self, context):
-        steps = ''
-        for i, step in enumerate(list(self.steps)):
-            steps += str(i+1) + '. ' + step + '\n'
-
+        steps = ''.join(
+            f'{str(i + 1)}. {step}' + '\n'
+            for i, step in enumerate(list(self.steps))
+        )
         previous_context = re.findall(f'## Previous Steps and Responses([\s\S]*?)## Current Step', str(context))[0]
         task_context = re.findall('## Current Step([\s\S]*?)### Completed Steps and Responses', str(context))[0]
         completed_steps = re.findall(f'### Completed Steps and Responses([\s\S]*?)###', str(context))[0]
@@ -115,7 +115,7 @@ class CustomAction(Action):
         # print(completed_steps)
         # print('-----------------------------------')
         # exit()
-        
+
         tools = list(self.tool) + ['Print', 'Write File', 'Final Output']
         prompt = PROMPT_TEMPLATE.format(
             context=task_context,
@@ -148,7 +148,7 @@ class CustomAction(Action):
             info = f"\n## Step\n{task_context} \n\n## Response\n{response}\n## Action\n{rsp.instruct_content.CurrentStep}\n"
             output_class = ActionOutput.create_model_class("task", INTERMEDIATE_OUTPUT_MAPPING)
             parsed_data = OutputParser.parse_data_with_mapping(info, INTERMEDIATE_OUTPUT_MAPPING)
-        
+
         instruct_content = output_class(**parsed_data)
 
         return ActionOutput(info, instruct_content)

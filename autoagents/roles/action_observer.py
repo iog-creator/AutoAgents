@@ -28,12 +28,11 @@ class ActionObserver(Role):
         self.necessary_information = ''
 
     async def _think(self) -> None:
-        self.steps.pop(0)        
+        self.steps.pop(0)
         if len(self.steps) > 0:
-            states_prompt = ''
-            for i, step in enumerate(self.steps):
-                states_prompt += str(i+1) + ':' + step + '\n'
-
+            states_prompt = ''.join(
+                f'{str(i + 1)}:{step}' + '\n' for i, step in enumerate(self.steps)
+            )
             self.next_action.set_prefix(self._get_prefix(), self.profile, self._proxy, self._llm_api_key, self._serpapi_api_key)
             task = self._rc.important_memory[0]
             content = [task, str(self._rc.env.new_roles_args), str(self._rc.important_memory), states_prompt]
@@ -60,12 +59,12 @@ class ActionObserver(Role):
             # if new_step:
             #     next_state = 0
             #     self.steps.insert(0, self.next_step)
-            
+
             # _step = self.steps[next_state]
             # self.steps.pop(next_state)
             # self.steps.insert(0, _step)
 
-            self.necessary_information = rsp.instruct_content.NecessaryInformation 
+            self.necessary_information = rsp.instruct_content.NecessaryInformation
             print('*******Next Steps********')
             print(states_prompt)
             print('************************')
